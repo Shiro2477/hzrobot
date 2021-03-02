@@ -266,7 +266,7 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
         }
         // ANTI-VIRTEXT
         if (isGroupMsg && isBotGroupAdmins && !isOwner) {
-          if (chats.length > 1000) {
+          if (chats.length > 5000) {
             await bocchi.sendTextWithMentions(from, `Terdeteksi @${sender.id} telah mengirim Virtext\nAkan dikeluarkan dari group!`)
             await bocchi.removeParticipant(groupId, sender.id)
     }
