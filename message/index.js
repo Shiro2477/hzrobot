@@ -264,13 +264,13 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 })
             }
         }
-        // ANTI-VIRTEXT
-        if (isGroupMsg && isBotGroupAdmins && !isOwner) {
-          if (chats.length > 5000) {
-            await bocchi.sendTextWithMentions(from, `Terdeteksi @${sender.id} telah mengirim Virtext\nAkan dikeluarkan dari group!`)
-            await bocchi.removeParticipant(groupId, sender.id)
-    }
-}
+         // Simple anti virtext, sorted by chat length, by: VideFrelan
+         if (isGroupMsg && !isGroupAdmins && isBotGroupAdmins && !isOwner) {
+            if (chats.length > 5000) {
+                await bocchi.sendTextWithMentions(from, `Terdeteksi @${sender.id} telah mengirim Virtext\nAnda akan dikick!`)
+                await bocchi.removeParticipant(groupId, sender.id)
+             }
+         }
         // Auto-sticker
         if (isGroupMsg && isAutoStickerOn && isMedia && isImage && !isCmd) {
             const mediaData = await decryptMedia(message, uaOverride)
@@ -415,7 +415,7 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                         var roles = 'Copper V'
                         if (resp[i].level >= 5) {
                             roles = 'Copper IV'
-                        } else if (resp[i].level >= 10) {
+                        } else if (_level[i].level >= 10) {
                             roles = 'Copper III'
                         } else if (resp[i].level >= 15) {
                             roles = 'Copper II'
@@ -431,11 +431,11 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                             roles = 'Silver II'
                         } else if (resp[i].level >= 45) {
                             roles = 'Silver I'
-                        } else if (resp[i].level >= 50) {
+                        } else if (_level[i].level >= 50) {
                             roles = 'Gold V'
-                        } else if (resp[i].level >= 55) {
+                        } else if (_level[i].level >= 55) {
                             roles = 'Gold IV'
-                        } else if (resp[i].level >= 60) {
+                        } else if (_level[i].level >= 60) {
                             roles = 'Gold III'
                         } else if (resp[i].level >= 65) {
                             roles = 'Gold II'
@@ -665,7 +665,7 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                     await bocchi.reply(from, 'Error!', id)
                 }
             break
-            case 'tiktoknowm': // by: VideFrelan
+            case 'tiktoknowm': // by: Hendi
             case 'tktnowm':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 if (!isUrl(url) && !url.includes('tiktok.com')) return await bocchi.reply(from, ind.wrongFormat(), id)
@@ -674,13 +674,12 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 await bocchi.reply(from, ind.wait(), id)
                 downloader.tikNoWm(url)
                     .then(async ({ result }) => {
-                        await bocchi.sendFileFromUrl(from, result.thumb, 'TiktokNoWM.jpg', `➸ *Username*: ${result.username}\n➸ *Caption*: ${result.caption}\n➸ *Uploaded on*: ${result.uploaded_on}\n\nSedang dikirim, sabar ya...`, id)
                         const responses = await fetch(result.link);
                         const buffer = await responses.buffer();
-                        fs.writeFileSync(`./temp/${sender.id}_TikTokNoWm.mp4`, buffer)
-                        await bocchi.sendFile(from, `./temp/${sender.id}_TikTokNoWm.mp4`, `${sender.id}_TikTokNoWm.mp4`, '', id)
-                        console.log('Success sending TikTok video with no WM!')
-                        fs.unlinkSync(`./temp/${sender.id}_TikTokNoWm.mp4`)
+                        fs.writeFileSync(`./temp/${sender.id}_TikTokNoWM.mp4`, buffer)
+                        await bocchi.sendFile(from, `./temp/${sender.id}_TikTokNoWM.mp4`, `${sender.id}_TikTokNoWM.mp4`, '', id)
+                        console.log('Success sending TikTok video!')
+                        fs.unlinkSync(`./temp/${sender.id}_TikTokNoWM.mp4`)
                     })
                     .catch(async (err) => {
                         console.error(err)
@@ -1519,6 +1518,16 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                     await bocchi.reply(from, pesan, id)
                 }
             break
+            case 'murottal':
+            if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                await bocchi.reply(from, ind.wait(), id)
+                console.log(`Get Murottal ${q} ...`)
+                await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/quran/audio/${q}?apikey=${config.lol}`, id)
+                console.log(`Success Get  Murottal ${q}`)
+            break
             case 'listsurah':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 await bocchi.reply(from, ind.wait(), id)
@@ -2240,15 +2249,16 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 limit.addLimit(sender.id, _limit, isPremium, isOwner)
                 await bocchi.reply(from, ind.wait(), id)
                 weeaboo.manga(q)
-                    .then(async ({ genre, info, link_dl, sinopsis, thumb }) => {
-                        let mangak = `${info}${genre}\nSinopsis: ${sinopsis}\nLink download:\n${link_dl}`
-                        await bocchi.sendFileFromUrl(from, thumb, 'mangak.jpg', mangak, null, null, true)
-                            .then(() => console.log('Success sending manga info!'))
-                    })
-                    .catch(async (err) => {
-                        console.error(err)
-                        await bocchi.reply(from, 'Error!', id)
-                    })
+                .then(async ({ title, info, link_dl, sinopsis, thumb }) => {
+                    const text = `Title : ${title}\n${info}\nSinopsis: ${sinopsis}\nLink download:\n${link_dl}`
+                    await bocchi.sendFileFromUrl(from,  thumb, 'manga.jpg', text, id)
+                    console.log('Success sending manga info!')
+                
+            })
+            .catch(async (err) => {
+                console.error(err)
+                await bocchi.reply(from, 'Error!', id)
+            })
             break
             case 'wait':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
@@ -2831,8 +2841,8 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
                 limit.addLimit(sender.id, _limit, isPremium, isOwner)
                 fun.simi(q)
-                    .then(async ({ jawaban }) => {
-                        await bocchi.reply(from, jawaban, id)
+                    .then(async ({ success }) => {
+                        await bocchi.reply(from, success, id)
                     })
                     .catch(async (err) => {
                         console.error(err)
