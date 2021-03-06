@@ -63,6 +63,7 @@ const { ind, eng } = require('./text/lang/')
 const { daily, level, register, afk, reminder, premium, limit} = require('../function')
 const Exif = require('../tools/exif')
 const { title } = require('process')
+const { number } = require('mathjs')
 const exif = new Exif()
 const cd = 4.32e+7
 const limitCount = 30
@@ -266,7 +267,7 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
         }
          // Simple anti virtext, sorted by chat length, by: VideFrelan
          if (isGroupMsg && !isGroupAdmins && isBotGroupAdmins && !isOwner) {
-            if (chats.length > 5000) {
+            if (chats > 5000) {
                 await bocchi.sendTextWithMentions(from, `Terdeteksi @${sender.id} telah mengirim Virtext\nAnda akan dikick!`)
                 await bocchi.removeParticipant(groupId, sender.id)
              }
@@ -1152,6 +1153,29 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                         await bocchi.reply(from, 'Error!', id)
                     })
             break
+            case 'tiktokstalk':
+            case 'tktstalk':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
+                if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                await bocchi.reply(from, ind.wait(), id)
+                misc.tktstalk(q)
+                .then(async ({ status, result }) => {
+                    if (status === '200') return await bocchi.reply(from, 'Not found.', id)
+                    let tktstlk = '-----[ *Tiktok STALK * ]-----'
+                    for (let i = 0; i < result; i++) {
+                        const { user_picture, username, nickname, bio, followers, followings, like, video} = result[i]
+                        tktstlk += `\n\n➸ *Username*: ${username}\n➸ *Nick Name*: ${nickname}\n➸ *Bio*: ${bio}\n➸ *Followers*: ${followers}\n➸ *Followings*: ${followings}\n➸ *Like*: ${like}\n➸ *Jumlah Video*: ${video}`
+                    }
+                    await bocchi.reply(from, tktstlk, id)
+                    console.log('Success sending TIKTOK STALK!')
+                })
+                .catch(async (err) => {
+                    console.error(err)
+                    await bocchi.reply(from, 'Error!', id)
+                })
+            break
             case 'gsmarena':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
@@ -1257,7 +1281,7 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 await bocchi.reply(from, ind.wait(), id)
                 misc.xxx(q)
                     .then(async ({ result }) => {
-                        let xxx = `Result for: *${result.data}*`
+                        let xxx = `*[[XXX SEARCH XTUBE]]*`
                         for (let i = 0; i < result.data.length; i++) {
                             xxx +=  `\n\n➸ *Title:* : ${result.data[i].title}\n *Duration* : ${result.data[i].duration}\n➸ *URL*: ${result.data[i].url}\n\n=_=_=_=_=_=_=_=_=_=_=_=_=`
                         }
@@ -1877,8 +1901,7 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
             case 'spamcall':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 if (!q) return bocchi.reply(from, ind.wrongFormat(), id)
-                if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
-                limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
                 await bocchi.reply(from, ind.wait(), id)
                 misc.call(q)
                     .then(async ({ result }) => {
@@ -1892,18 +1915,15 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
             break
             case 'spamsms':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
-                if (args.length !== 2) return await bocchi.reply(from, ind.wrongFormat(), id)
-                if (isNaN(Number(args[0])) && isNaN(Number(args[1]))) return await bocchi.reply(from, ind.wrongFormat(), id)
-                if (Number(args[1]) > 10) return await bocchi.reply(from, 'Maximum 10 SMS.', id)
-                if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
-                limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                if (!q) return bocchi.reply(from, ind.wrongFormat(), id)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
                 await bocchi.reply(from, ind.wait(), id)
-                misc.sms(args[0], args[1])
-                    .then(async ({ status, logs, msg }) => {
+                misc.spamsms(q)
+                    .then(async ({ status, result, message }) => {
                         if (status !== 200) {
-                            await bocchi.reply(from, msg, id)
+                            await bocchi.reply(from, message, result, id)
                         } else {
-                            await bocchi.reply(from, logs, id)
+                            await bocchi.reply(from, result, id)
                             console.log('Success sending spam!')
                         }
                     })
@@ -2179,8 +2199,149 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 const kubik = bdr.rdb.kubik(q)
                 await bocchi.reply(from, `*Hasil*: ${kubik}`, id)
             break
-
+            //GET RANDOM IMAGE
+            case 'bts':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random BTS ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/bts?apikey=${config.lol}`, id)
+                    console.log(`Success Get  random bts`)
+            break
+            case 'exo':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random exo ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/exo?apikey=${config.lol}`, id)
+                    console.log(`Success Get  random exo`)
+            break
+            case 'blackpink':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random blackpink ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/blackpink?apikey=${config.lol}`, id)
+                    console.log(`Success Get random blackpink`)
+            break 
+            case 'meme':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random Meme ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/meme/memeindo?apikey=${config.lol}`, id)
+                    console.log(`Success Get random Meme`)
+            break
+            case 'darkjoke':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random Dark Jokes ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/meme/darkjoke?apikey=${config.lol}`, id)
+                    console.log(`Success Get random Dark Jokes`)
+            break     
+            //end get random image    
             // Weeb zone
+            case 'elf':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random Elf ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/elf?apikey=${config.lol}`, id)
+                    console.log(`Success Get random Elf`)
+            break 
+            case 'loli':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random Loli ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/loli?apikey=${config.lol}`, id)
+                    console.log(`Success Get random Loli`)
+            break 
+            case 'husbu':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random Husbu ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/husbu?apikey=${config.lol}`, id)
+                    console.log(`Success Get random Husbu`)
+            break 
+            case 'sagiri':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random Sagiri ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/sagiri?apikey=${config.lol}`, id)
+                    console.log(`Success Get random Sagiri`)
+            break 
+            case 'shinobu':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random shinobu ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/shinobu?apikey=${config.lol}`, id)
+                    console.log(`Success Get random shinobu`)
+            break
+            case 'megumin':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random megumin ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/megumin?apikey=${config.lol}`, id)
+                    console.log(`Success Get random megumin`)
+            break
+            case 'nloli':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!isGroupMsg) return await bocchi.reply(from, ind.groupOnly(), id)
+                    if (!isNsfw) return await bocchi.reply(from, ind.notNsfw(), id)
+                    if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random nsfw loli ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/nsfw/loli?apikey=${config.lol}`, id)
+                    console.log(`Success Get random nsfw loli`)
+            break
+            case 'ecchi':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!isGroupMsg) return await bocchi.reply(from, ind.groupOnly(), id)
+                    if (!isNsfw) return await bocchi.reply(from, ind.notNsfw(), id)
+                    if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random nsfw ecchi ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random/nsfw/ecchi?apikey=${config.lol}`, id)
+                    console.log(`Success Get random nsfw ecchi`)
+            break
+            case 'baka':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                    if (!q.includes('')) return bocchi.reply(from, ind.wrongFormat(), id)
+                    if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
+                    limit.addLimit(sender.id, _limit, isPremium, isOwner)
+                    await bocchi.reply(from, ind.wait(), id)
+                    console.log(`Get random gif baka ...`)
+                    await bocchi.sendFileFromUrl(from, `https://lolhuman.herokuapp.com/api/random2/baka?apikey=${config.lol}`, id)
+                    console.log(`Success Get random gif baka`)
+            break
             case 'neko':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
@@ -2221,6 +2382,85 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                         await bocchi.reply(from, 'Error!', id)
                     })
             break
+            /** case 'nhsearch':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                await bocchi.reply(from, ind.wait(), id)
+               nsfw.nhsearch(q)
+               .then(async ({ status, result }) => {
+                if (status !== 200) {
+                    await bocchi.reply(from, 'Not found.', id)
+                } else {
+                    await bocchi.reply(from, `*「 SEARCH HENTAI 」*\n\n➸ *Kode Nuklir*: ${result[0].id}\n\n➸ *Judul EN*: ${result[0].title_english}\n➸ *Judul JP*: ${result[0].title_japanese}\n➸ *Judul Natif*: ${result[0].title_native}\n➸ *Upload*: ${result[0].date_upload}\n➸*Page*${result[0].page}\n➸*Favorite*${result[0].favourite}`, id)
+                    console.log(`Success sending ${q}!`)
+                }
+            })
+            .catch(async (err) => {
+                console.error(err)
+                await bocchi.reply(from, 'Error!', id)
+            })
+            break*/
+            case 'phsearch':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                await bocchi.reply(from, ind.wait(), id)
+                nsfw.phsearch(q)
+                    .then(async ({ result }) => {
+                        let phs = `*[[PORNHUB SEARCH]]*`
+                        for (let i = 0; i < result.length; i++) {
+                            phs +=  `\n\n➸ *Tittle*: ${result[i].title}\n➸ *Views*: ${result[i].views}\n➸ *Duration*: ${result[i].duration}\n➸ *Upload By*: ${result[i].uploader}\n➸ *Rating*: ${result[i].rating}\n➸ *Add*: ${result[i].add}\n➸ *Link*: ${result[i].link}\n\n=_=_=_=_=_=_=_=_=_=_=_=_=`
+                        }
+                        phs += '\n\nBy: @hendy29_'
+                        await bocchi.reply(from, phs, id)
+                        console.log('Success sending Pornhub result!')
+                    })
+                    .catch(async (err) => {
+                        console.error(err)
+                        await bocchi.reply(from, 'Error!', id)
+                    })
+            break
+            case 'xnsearch':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                await bocchi.reply(from, ind.wait(), id)
+                nsfw.xnxx(q)
+                    .then(async ({ result }) => {
+                        let xnxs = `*[[XNXX SEARCH]]*`
+                        for (let i = 0; i < result.length; i++) {
+                            xnxs +=  `\n\n➸ *Tittle*: ${result[i].title}\n➸ *Views*: ${result[i].views}\n➸ *Duration*: ${result[i].duration}\n➸ *Upload By*: ${result[i].uploader}\n➸ *Link*: ${result[i].link}\n\n=_=_=_=_=_=_=_=_=_=_=_=_=`
+                        }
+                        xnxs += '\n\nBy: @hendy29_'
+                        await bocchi.reply(from, xnxs, id)
+                        console.log('Success sending XNXX result!')
+                    })
+                    .catch(async (err) => {
+                        console.error(err)
+                        await bocchi.reply(from, 'Error!', id)
+                    })
+            break
+            case 'nhsearch':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                await bocchi.reply(from, ind.wait(), id)
+                nsfw.nhsearch(q)
+                    .then(async ({ result }) => {
+                        let nhsch = `*[[HENTAI SEARCH]]*`
+                        for (let i = 0; i < result.length; i++) {
+                            nhsch +=  `\n\n➸ *Kode Nuklir*: ${result[i].id}\n➸ *Judul EN*: ${result[i].title_english}\n➸ *Judul JP*: ${result[i].title_japanese}\n➸ *Judul Natif*: ${result[i].title_native}\n➸ *Upload*: ${result[i].date_upload}\n➸ *Page* : ${result[i].page}\n➸ *Favorite* : ${result[i].favourite}\n\n=_=_=_=_=_=_=_=_=_=_=_=_=`
+                        }
+                        nhsch += '\n\nBy: @hendy29_'
+                        await bocchi.reply(from, nhsch, id)
+                        console.log('Success sending hentai result!')
+                    })
+                    .catch(async (err) => {
+                        console.error(err)
+                        await bocchi.reply(from, 'Error!', id)
+                    })
+                    break
             case 'kusonime':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
@@ -2841,12 +3081,17 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 if (limit.isLimit(sender.id, _limit, limitCount, isPremium, isOwner)) return await bocchi.reply(from, ind.limit(), id)
                 limit.addLimit(sender.id, _limit, isPremium, isOwner)
                 fun.simi(q)
-                    .then(async ({ success }) => {
-                        await bocchi.reply(from, success, id)
-                    })
-                    .catch(async (err) => {
-                        console.error(err)
-                        await bocchi.reply(from, `Error!\n\n${err}`, id)
+                .then(async ({ status, result, message }) => {
+                    if (status !== 200) {
+                        await bocchi.reply(from, message, result, id)
+                    } else {
+                        await bocchi.reply(from, result, id)
+                        console.log('Success replay simi!')
+                    }
+                })
+                .catch(async (err) => {
+                    console.error(err)
+                    await bocchi.reply(from, 'Error!', id)
                     })
             break
             case 'glitchtext':
@@ -3956,6 +4201,27 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                         })
                 }
             break
+            case 'xndl':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!isUrl(url)) return await bocchi.reply(from, ind.wrongFormat(), id)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                await bocchi.reply(from, ind.wait(), id)
+                nsfw.xndl(url)
+                .then(async ({ status, result }) => {
+                    if (status === '200') {
+                        await bocchi.reply(from, 'Not found.', id)
+                    } else {
+                            await bocchi.sendFileFromUrl(from, result.thumbnail, `${result.title}.jpg`, ind.xnFound(result), id)
+                            await bocchi.sendFileFromUrl(from, result.link[0].link, `${result.title}.mp4`, '', id)
+                            console.log('Success sending XNXX video!')
+                        
+                        }
+                    })
+                    .catch(async (err) => {
+                        console.error(err)
+                        await bocchi.reply(from, 'Error!', id)
+                    })
+            break
             case 'phdl':
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 if (!isUrl(url) && !url.includes('pornhub.com')) return await bocchi.reply(from, ind.wrongFormat(), id)
@@ -3968,14 +4234,12 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                             .then(async ({ title, download_urls, thumbnail_url }) => {
                                 const count = Object.keys(download_urls).length
                                 if (count !== 2) {
-                                    const shortsLow = await misc.shortener(download_urls['240P'])
-                                    const shortsMid = await misc.shortener(download_urls['480P'])
                                     const shortsHigh = await misc.shortener(download_urls['720P'])
-                                    await bocchi.sendFileFromUrl(from, thumbnail_url, `${title}`, `Title: ${title}\n\nLinks:\n${shortsLow} (240P)\n${shortsMid} (480P)\n${shortsHigh} (720P)`, id)
+                                    await bocchi.sendFileFromUrl(from, thumbnail_url, `${title}`, `Title: ${title}\n\nLinks:\n${shortsHigh} (720P)`, id)
                                         .then(() => console.log('Success sending pornhub metadata!'))
                                 } else {
-                                    const shortsLow = await misc.shortener(download_urls['240P'])
-                                    await bocchi.sendFileFromUrl(from, thumbnail_url, `${title}`, `Title: ${title}\n\nLinks:\n${shortsLow} (240P)`, id)
+                                    const shortsLow = await misc.shortener(download_urls['720P'])
+                                    await bocchi.sendFileFromUrl(from, thumbnail_url, `${title}`, `Title: ${title}\n\nLinks:\n${shortsHigh} (720P)`, id)
                                         .then(() => console.log('Success sending pornhub metadata!'))
                                 }
                             })
@@ -3991,14 +4255,12 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                             .then(async ({ title, download_urls, thumbnail_url }) => {
                                 const count = Object.keys(download_urls).length
                                 if (count !== 2) {
-                                    const shortsLow = await misc.shortener(download_urls['240P'])
-                                    const shortsMid = await misc.shortener(download_urls['480P'])
                                     const shortsHigh = await misc.shortener(download_urls['720P'])
-                                    await bocchi.sendFileFromUrl(from, thumbnail_url, `${title}`, `Title: ${title}\n\nLinks:\n${shortsLow} (240P)\n${shortsMid} (480P)\n${shortsHigh} (720P)`, id)
+                                    await bocchi.sendFileFromUrl(from, thumbnail_url, `${title}`, `Title: ${title}\n\nLinks:\n${shortsHigh} (720P)`, id)
                                         .then(() => console.log('Success sending pornhub metadata!'))
                                 } else {
-                                    const shortsLow = await misc.shortener(download_urls['240P'])
-                                    await bocchi.sendFileFromUrl(from, thumbnail_url, `${title}`, `Title: ${title}\n\nLinks:\n${shortsLow} (240P)`, id)
+                                    const shortsLow = await misc.shortener(download_urls['720P'])
+                                    await bocchi.sendFileFromUrl(from, thumbnail_url, `${title}`, `Title: ${title}\n\nLinks:\n${shortsHigh} (720P)`, id)
                                         .then(() => console.log('Success sending pornhub metadata!'))
                                 }
                             })

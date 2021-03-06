@@ -94,6 +94,14 @@ exports.ytFound = (result) => {
     return `*Video ditemukan!*\n\n➸ *Judul*: ${result.title}\n\nMedia sedang dikirim, mohon tunggu...`
 }
 
+exports.xnFound = (result) => {
+    return `*Video ditemukan!*\n\n➸ *Judul*: ${result.title}\n➸ *Duration*: ${result.duration}\n➸ *Description*: ${result.description}\n\nMedia sedang dikirim, mohon tunggu...`
+}
+
+exports.tktstalk = (result) => {
+    return `*「 Tiktok STALK 」*\n\n➸ *Username*: ${result.username}\n➸ *Nick Name*: ${result.nickname}\n➸ *Bio*: ${result.bio}\n➸ *Followers*: ${result.followers}\n➸ *Followings*: ${result.followings}\n➸ *Like*: ${result.like}\n➸ *Video*: ${result.video}`
+}
+
 exports.notRegistered = () => {
     return `Kamu belum terdaftar di database!\n\nSilakan register dengan format:\n*${prefix}register* nama | umur\n\nNote:\nHarap save nomor ku agar bisa mendapatkan serial!!`
 }
@@ -442,17 +450,29 @@ exports.menuDownloader = () => {
 ╟⊱ *${prefix}cocodl* link video Cocofun
 ║
 ╚═══❉ 
-╔═══❉ *PLAY MUSIC*
+╔═══❉ *PLAY AUDIO*
 ║      
 ╟⊱ *${prefix}ytmp3* link
 ╟⊱ *${prefix}music* judul lagu
-╟⊱ *${prefix}play* judul lagu 
+╟⊱ *${prefix}play* judul lagu
+╟⊱ *${prefix}murottal* numberlistsurah 
+║
+╚═══❉
+╔═══❉ *RANDOM IMAGE*
+║      
+╟⊱ *${prefix}bts*
+╟⊱ *${prefix}exo*
+╟⊱ *${prefix}blackpink*
+╟⊱ *${prefix}meme*
+╟⊱ *${prefix}darkjoke*
 ║
 ╚═══❉
 ╔═══❉ *MODE TIKTOK*
 ║       ║FREE║
 ╟⊱ *${prefix}tiktokpic* username tiktok
 ╟⊱ *${prefix}tokhastag* hastag tiktok
+║ 
+║       ║PREMIUM║
 ╟⊱ *${prefix}tiktoknowm* link video
 ║
 ╚═══❉ 
@@ -708,7 +728,7 @@ Usage: *${prefix}spamcall* 812xxxxxxxx
 34. *${prefix}spamsms*
 Spam SMS.
 Aliases: -
-Usage: *${prefix}spamsms* 0812xxxxxxxx jumlah_pesan
+Usage: *${prefix}spamsms* 0812xxxxxxxx
 
 35. *${prefix}email*
 Mengirim email secara anonymous.
@@ -840,74 +860,44 @@ exports.menutext = () => {
 
 exports.menuWeeaboo = () => {
     return `
------[ WEEABOO ]-----
-
-1. *${prefix}quotesnime*
-Mengirim quotes anime.
-Aliases: quotenime
-Usage: *${prefix}quotesnime*
-
-2. *${prefix}neko*
-Mengirim foto neko girl.
-Aliases: -
-Usage: *${prefix}neko*
-
-3. *${prefix}wallpaper*
-Mengirim wallpaper anime.
-Aliases: *wp*
-Usage: *${prefix}wallpaper*
-
-4. *${prefix}kemono*
-Mengirim foto kemonomimi girl.
-Aliases: -
-Usage: *${prefix}kemono*
-
-5. *${prefix}kusonime*
-Mencari info anime dan link download batch di Kusonime.
-Aliases: -
-Usage: *${prefix}kusonime* judul_anime
-
-6. *${prefix}komiku*
-Mencari info manga dan link download di Komiku.
-Aliases: -
-Usage: *${prefix}komiku* judul_manga
-
-7. *${prefix}wait*
-Mencari source anime dari screenshot scene.
-Aliases: -
-Usage: Kirim screenshot dengan caption *${prefix}wait* atau reply screenshot dengan caption *${prefix}wait*.
-
-8. *${prefix}source*
-Mencari source dari panel doujin, ilustrasi, dan gambar yang berhubungan dengan anime.
-Aliases: *sauce*
-Usage: Kirim gambar dengan caption *${prefix}source* atau reply gambar dengan caption *${prefix}source*.
-
-9. *${prefix}waifu*
-Mengirim random foto waifu.
-Aliases: -
-Usage: *${prefix}waifu*
-
-10. *${prefix}anitoki*
-Cek update terbaru Anitoki.
-Aliases: -
-Usage: *${prefix}anitoki*
-
-11. *${prefix}neonime*
-Cek update terbaru Neonime.
-Aliases: -
-Usage: *${prefix}neonime*
-
-12. *${prefix}anoboy*
-Cek on-going anime dari Anoboy.
-Aliases: -
-Usage: *${prefix}anoboy*
-
-13. *${prefix}jurnalotaku*
-jurnal anime .
-Aliases: -
-Usage: *${prefix}jurnalotaku* judul anime
-
-_Index of [6]_
+╔═══❉ *WEEABOO* ❉════
+║       ║RANDOM IMAGE ANIME║
+╟⊱ *${prefix}neko*
+╟⊱ *${prefix}kemono*
+╟⊱ *${prefix}loli* 
+╟⊱ *${prefix}megumin* 
+╟⊱ *${prefix}husbu* 
+╟⊱ *${prefix}sagiri* 
+╟⊱ *${prefix}shinobu* 
+╟⊱ *${prefix}walpaper*
+╟⊱ *${prefix}waifu*
+╟⊱ *${prefix}baka*
+║
+╚═══❉ 
+╔═══❉ *Cek Update Anime*
+║      
+╟⊱ *${prefix}anitoki*
+╟⊱ *${prefix}neonime*
+╟⊱ *${prefix}anoboy* 
+║
+╚═══❉
+╔═══❉ *SOURCE ANIME*
+║      
+╟⊱ *${prefix}saurce*
+╟⊱ *${prefix}wait*
+║
+╚═══❉
+╔═══❉ *Download Batch Anime*
+║      
+╟⊱ *${prefix}kusonime* judul anime
+╟⊱ *${prefix}komiku* judul anime
+║
+╚═══❉ 
+╔═══❉ *FITUR LAINNYA* 
+║
+╟⊱ *${prefix}jurnalotaku* judul anime    
+║   
+╚═══❉ *_Index of [6]_* ❉════
     `
 }
 
@@ -1189,8 +1179,11 @@ exports.menuPrem = () => {
 ╟⊱ *${prefix}fbdl* link fb video
 ╟⊱ *${prefix}igdl* link ig video
 ╟⊱ *${prefix}tiktok* link tiktok video
+╟⊱ *${prefix}tktnowm* link tiktok video
 ╟⊱ *${prefix}cocodl* link cocofun video 
 ╟⊱ *${prefix}asupan* 
+╟⊱ *${prefix}spamcall* 82xxxxx
+╟⊱ *${prefix}spamsms* 628xxxxx
 ║
 ╚═══❉ *_Index of [12]_* ❉════
 
