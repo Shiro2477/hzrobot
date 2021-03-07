@@ -71,7 +71,7 @@ exports.listBlock = (blockNumber) => {
 }
 
 exports.notPremium = () => {
-    return `Maaf! Command ini khusus untuk user premium saja\n Jiak ingin menjadi user premium silahkan hubungi owner : wa.me/6285156022091`
+    return `Maaf! Command ini khusus untuk user premium saja\nJika ingin menjadi user premium silahkan hubungi owner : wa.me/6285156022091 [NOT FREE]`
 }
 
 exports.notAdmin = () => {
@@ -92,6 +92,10 @@ exports.botNotAdmin = () => {
 
 exports.ytFound = (result) => {
     return `*Video ditemukan!*\n\n➸ *Judul*: ${result.title}\n\nMedia sedang dikirim, mohon tunggu...`
+}
+
+exports.ayat = (result) => {
+    return `\n${result.ayat[0].arab} (${result.ayat[0].ayat})\n\n*Artinya* :\n${result.ayat[0].indonesia}`
 }
 
 exports.xnFound = (result) => {
@@ -127,7 +131,7 @@ exports.videoLimit = () => {
 }
 
 exports.joox = (result) => {
-    return `*Lagu ditemukan!*\n\n➸ Media sedang dikirim, mohon tunggu...`
+    return `*Lagu ditemukan!*\n\n➸ *Judul* : ${result[0].judul}\n➸ *Penyanyi* : ${result[0].penyanyi}\n➸ *Album* : ${result[0].album} \n➸ *Size* : ${result[0].filesize} \n➸ *Lirik* : ${result[0].lirik} \n\nMedia sedang dikirim, mohon tunggu...`
 }
 
 exports.gsm = (result) => {
@@ -427,6 +431,7 @@ exports.menu = (jumlahUser, level, xp, role, pushname, requiredXp, premium) => {
 ║ *[10]* Owner
 ║ *[11]* Leveling
 ║ *[12]* Premium Only
+║ *[13]* Religi
 ║
 ║          *HzrBot*
 ╚═════════❉ 
@@ -1189,6 +1194,16 @@ exports.menuPrem = () => {
 
     `}
 
+exports.menuLeveling = () => {
+    return `
+╔═══❉ *RELIGI* ❉════
+║
+╟⊱ *${prefix}*surah* nomor_surah
+╟⊱ *${prefix}*ayat* nomor_surah ayat
+║
+╚═══❉ *_Index of [13]_* ❉════
+    `
+}
 
 exports.rules = () => {
     return `

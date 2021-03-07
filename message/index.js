@@ -63,7 +63,7 @@ const { ind, eng } = require('./text/lang/')
 const { daily, level, register, afk, reminder, premium, limit} = require('../function')
 const Exif = require('../tools/exif')
 const { title } = require('process')
-const { number } = require('mathjs')
+const { number, i } = require('mathjs')
 const exif = new Exif()
 const cd = 4.32e+7
 const limitCount = 30
@@ -501,7 +501,7 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                     await bocchi.reply(from, ind.wrongFormat(), id)
                 }
             break
-            case 'joox': // By Hafizh
+            /**case 'joox': // By Hafizh
                 if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
                 if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
                 if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
@@ -520,6 +520,22 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                         await bocchi.sendFile(from, `${sender.id}_joox.png`, 'joox.png', ind.joox(dataJoox.data), id)
                         fs.unlinkSync(`${sender.id}_joox.png`)
                         await bocchi.sendFileFromUrl(from,dataJoox.data.result[0].linkMp3, 'joox.mp3', '', id)
+                    })
+                    .catch(async (err) => {
+                        console.error(err)
+                        await bocchi.reply(from, 'Error!', id)
+                    })
+            break*/
+            case 'joox': //By Hendi29_
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                await bocchi.reply(from, ind.wait(), id)
+                downloader.joox(q)
+                .then(async ({ result }) => {
+                            await bocchi.sendFileFromUrl(from, result[0].linkImg, `${result[0].judul}.jpg`, ind.joox(result), id)
+                            await bocchi.sendFileFromUrl(from, result[0].linkMp3, `${result[0].judul}.mp3`, '', id)
+                            console.log('Success sending XNXX video!')
                     })
                     .catch(async (err) => {
                         console.error(err)
@@ -1575,13 +1591,38 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                 await bocchi.reply(from, ind.wait(), id)
                 misc.getSurah(args[0])
                     .then(async ({ result }) => {
-                        await bocchi.reply(from, `${result.surah}\n\n${result.quran}`, id)
-                        console.log('Success sending surah!')
+                        let srh = `*Surah* : \n❉ ${result.asma} / ${result.surah}`
+                        for (let i = 0; i < result.ayat.length; i++) {
+                            srh += `\n\n${result.ayat[i].arab} (${result.ayat[i].ayat})\n\n*Artinya* :\n${result.ayat[i].indonesia}`
+                        }
+                        await bocchi.reply(from, srh, id)
+                        console.log('Success sending Al-Qur\'an Surah!')
                     })
                     .catch(async (err) => {
                         console.error(err)
                         await bocchi.reply(from, 'Error!', id)
                     })
+            break
+            case 'ayat':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q.includes('|')) return await bocchi.reply(from, ind.wrongFormat(), id)
+                const SuRah = q.substring(0, q.indexOf('|') - 1)
+                const AyaT = q.substring(q.lastIndexOf('|') + 2)
+                await bocchi.reply(from, ind.wait(), id)
+                misc.ayat(SuRah, AyaT)
+                .then(async ({ status, result }) => {
+                    let srh = `*Surah* : \n❉ ${result.asma} / ${result.surah}`
+                        for (let i = 0; i < result.ayat.length; i++) {
+                            srh += `\n\n${result.ayat[i].arab} (${result.ayat[i].ayat})\n\n*Artinya* :\n${result.ayat[i].indonesia}`
+                        }
+                        await bocchi.reply(from, srh, id)
+                        console.log('Success sending Al-Qur\'an Surah!')
+                    })
+                    .catch(async (err) => {
+                        console.error(err)
+                        await bocchi.reply(from, 'Error!', id)
+                    })
+        break
             break
             case 'hadis': // irham01
             case 'hadees':
@@ -2614,6 +2655,26 @@ module.exports = msgHandler = async (bocchi = new Client(), message) => {
                         }
                         await bocchi.reply(from, neoInfo, id)
                         console.log('Success sending Neonime latest update!')
+                    })
+                    .catch(async (err) => {
+                        console.error(err)
+                        await bocchi.reply(from, 'Error!', id)
+                    })
+            break
+            case 'otaku':
+                if (!isRegistered) return await bocchi.reply(from, ind.notRegistered(), id)
+                if (!q) return await bocchi.reply(from, ind.wrongFormat(), id)
+                if (!isPremium) return await bocchi.reply(from, ind.notPremium(), id)
+                await bocchi.reply(from, ind.wait(), id)
+                downloader.otaku(q)
+                    .then(async ({ result }) => {
+                        let otk = `*[OTAKUDESU SEARCH]\n\n➸ *Tittle* : ${result.title}\n➸ *Judul* : ${result.judul}\n➸ *Total Episode* : ${result.episodes}\n➸ *Tanggal Rilis* : ${result.aired}\n➸ *Genre*:${result.genres}\n➸ *Studio*:${result.studios}\n➸ *Rating* : ${result.rating}\n\n=_=_=_=_=_=_=_=_=_=_=_=_=`
+                        for (let i = 0; i < result.link_dl.length; i++) {
+                            otk +=  `\n\n➸ *Episode* : ${result.link_dl[i].title}\n\n=_=_=_=_=_=_=_=_=_=_=_=_=\n\n*[LINK DOWNLOAD]* \n\n➸ *ZippyShare*: ${result.link_dl[i].link_dl[0].link_dl.ZippyShare}\n➸ *Filesim*: ${result.link_dl[i].link_dl[0].link_dl.Filesim}\n➸ *LetsUp*: ${result.link_dl[i].link_dl[0].link_dl.LetsUp}\n➸ *DesuFiles*: ${result.link_dl[i].link_dl[0].link_dl.DesuFiles}\n➸ *Mega*: ${result.link_dl[i].link_dl[0].link_dl.Mega}\n\n=_=_=_=_=_=_=_=_=_=_=_=_=`
+                        }
+                        otk += '\n\nBy: @hendy29_'
+                        await bocchi.reply(from, otk, id)
+                        console.log('Success sending otakudesu result!')
                     })
                     .catch(async (err) => {
                         console.error(err)
